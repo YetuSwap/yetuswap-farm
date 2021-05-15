@@ -1,11 +1,38 @@
-//SPDX-License-Identifier: MIT
-pragma solidity 0.6.12;
+// SPDX-License-Identifier: MIT
 
-import "./yetuswap-lib/utils/Address.sol";
-import "./YetubitToken.sol";
+pragma solidity >=0.4.0;
 
-// AfrikanBar.
-contract AfrikanBar is Context, IBEP20, Ownable {
+import '../../access/Ownable.sol';
+import '../../GSN/Context.sol';
+import './IBEP20.sol';
+import '../../math/SafeMath.sol';
+import '../../utils/Address.sol';
+
+/**
+ * @dev Implementation of the {IBEP20} interface.
+ *
+ * This implementation is agnostic to the way tokens are created. This means
+ * that a supply mechanism has to be added in a derived contract using {_mint}.
+ * For a generic mechanism see {BEP20PresetMinterPauser}.
+ *
+ * TIP: For a detailed writeup see our guide
+ * https://forum.zeppelin.solutions/t/how-to-implement-BEP20-supply-mechanisms/226[How
+ * to implement supply mechanisms].
+ *
+ * We have followed general OpenZeppelin guidelines: functions revert instead
+ * of returning `false` on failure. This behavior is nonetheless conventional
+ * and does not conflict with the expectations of BEP20 applications.
+ *
+ * Additionally, an {Approval} event is emitted on calls to {transferFrom}.
+ * This allows applications to reconstruct the allowance for all accounts just
+ * by listening to said events. Other implementations of the EIP may not emit
+ * these events, as it isn't required by the specification.
+ *
+ * Finally, the non-standard {decreaseAllowance} and {increaseAllowance}
+ * functions have been added to mitigate the well-known issues around setting
+ * allowances. See {IBEP20-approve}.
+ */
+contract BEP20 is Context, IBEP20, Ownable {
     using SafeMath for uint256;
     using Address for address;
 
@@ -18,32 +45,20 @@ contract AfrikanBar is Context, IBEP20, Ownable {
     string private _name;
     string private _symbol;
     uint8 private _decimals;
-    // The YETU TOKEN!
-    YetubitToken public yetu;
-    
-    constructor(YetubitToken _yetu) public {
-    _name = "AfrikanBar Token";
-    _symbol = "AFRIKAN";
-    _decimals = 18;
-     yetu = _yetu;
-    }
-     /// @notice Creates `_amount` token to `_to`. Must only be called by the owner (MansaMusa).
-    function mint(address _to, uint256 _amount) public onlyOwner {
-        _mint(_to, _amount);
-    }
 
-    function burn(address _from ,uint256 _amount) public onlyOwner {
-        _burn(_from, _amount);
-    }
-
-    // Safe yetu transfer function, just in case if rounding error causes pool to not have enough YETUs.
-    function safeYetuTransfer(address _to, uint256 _amount) public onlyOwner {
-        uint256 yetuBal = yetu.balanceOf(address(this));
-        if (_amount > yetuBal) {
-            yetu.transfer(_to, yetuBal);
-        } else {
-            yetu.transfer(_to, _amount);
-        }
+    /**
+     * @dev Sets the values for {name} and {symbol}, initializes {decimals} with
+     * a default value of 18.
+     *
+     * To select a different value for {decimals}, use {_setupDecimals}.
+     *
+     * All three of these values are immutable: they can only be set once during
+     * construction.
+     */
+    constructor(string memory name, string memory symbol) public {
+        _name = name;
+        _symbol = symbol;
+        _decimals = 18;
     }
 
     /**

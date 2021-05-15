@@ -5,7 +5,7 @@ const AfrikanBar = artifacts.require('AfrikanBar');
 
 contract('AfrikanBar', ([alice, bob, carol, dev, minter]) => {
   beforeEach(async () => {
-    this.yetu = await YetubitToken.new({ from: minter });
+    this.yetu = await YetubitToken.new(minter, { from: minter });
     this.afrikan = await AfrikanBar.new(this.yetu.address, { from: minter });
   });
 
@@ -30,7 +30,7 @@ contract('AfrikanBar', ([alice, bob, carol, dev, minter]) => {
       (await this.yetu.balanceOf(this.afrikan.address)).toString(),
       '0'
     );
-    await this.yetu.mint(this.afrikan.address, 1000, { from: minter });
+    await this.yetu.transfer(this.afrikan.address, 1000, { from: minter });
     await this.afrikan.safeYetuTransfer(bob, 200, { from: minter });
     assert.equal((await this.yetu.balanceOf(bob)).toString(), '200');
     assert.equal(

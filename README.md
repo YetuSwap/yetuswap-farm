@@ -6,7 +6,7 @@ https://yetuswap.finance. Feel free to read the code. More details coming soon.
 
 ### BSCMAINNET
 
-- YetubitToken - https://bscscan.com/token/0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82
+- YetubitToken - https://bscscan.com/token/0x6652048fa5e66ed63a0225ffd7c82e106b0aa18b
 - MansaMusa - https://bscscan.com/address/0x73feaa1eE314F8c655E354234017bE2193C9E24E
 - (Uni|Yetu)swapV2Factory - https://bscscan.com/address/0xE3E3B5ECA67AF8Ce67C1017C4098c5Be91176CeA
 - (Uni|Yetu)swapV2Router02 - https://bscscan.com/address/0x4837b50242f104ACd3FA23E00Bf7e9A5fC4D5844

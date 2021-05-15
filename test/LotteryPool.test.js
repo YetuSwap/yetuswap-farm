@@ -8,7 +8,7 @@ const LotteryRewardPool = artifacts.require('LotteryRewardPool');
 
 contract('MansaMusa', ([alice, bob, carol, dev, minter]) => {
   beforeEach(async () => {
-    this.yetu = await YetubitToken.new({ from: minter });
+    this.yetu = await YetubitToken.new(minter, { from: minter });
     this.afrikan = await AfrikanBar.new(this.yetu.address, { from: minter });
     this.lp1 = await MockBEP20.new('LPToken', 'LP1', '1000000', {
       from: minter,
@@ -43,7 +43,7 @@ contract('MansaMusa', ([alice, bob, carol, dev, minter]) => {
   });
 
   it('real case', async () => {
-    await time.advanceBlockTo('70');
+    await time.advanceBlockTo('821');
     this.lottery = await LotteryRewardPool.new(
       this.musa.address,
       this.yetu.address,
@@ -64,7 +64,7 @@ contract('MansaMusa', ([alice, bob, carol, dev, minter]) => {
     );
 
     await this.lottery.startFarming(4, this.lp4.address, '1', { from: dev });
-    await time.advanceBlockTo('80');
+    await time.advanceBlockTo('831');
 
     assert.equal((await this.lottery.pendingReward('4')).toString(), '3');
     assert.equal(

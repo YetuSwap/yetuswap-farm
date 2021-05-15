@@ -13,7 +13,7 @@ function encodeParameters(types, values) {
 
 contract('Timelock', ([alice, bob, carol, dev, minter]) => {
     beforeEach(async () => {
-        this.yetu = await YetubitToken.new({ from: alice });
+        this.yetu = await YetubitToken.new(alice, { from: alice });
         this.timelock = await Timelock.new(bob, '28800', { from: alice }); //8hours
     });
 
@@ -58,7 +58,7 @@ contract('Timelock', ([alice, bob, carol, dev, minter]) => {
             this.yetu.address, '0', 'transferOwnership(address)',
             encodeParameters(['address'], [carol]), eta, { from: bob },
         );
-        assert.equal((await this.yetu.owner()).valueOf(), carol);
+        assert.equal((await this.yetu.getOwner()).valueOf(), carol);
     });
 
     it('should also work with MansaMusa', async () => {

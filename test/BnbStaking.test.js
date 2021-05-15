@@ -7,7 +7,7 @@ const WBNB = artifacts.require('libs/WBNB');
 
 contract('BnbStaking.......', async ([alice, bob, admin, dev, minter]) => {
   beforeEach(async () => {
-    this.rewardToken = await YetubitToken.new({ from: minter });
+    this.rewardToken = await YetubitToken.new(minter, { from: minter });
     this.lpToken = await MockBEP20.new('LPToken', 'LP1', '1000000', {
       from: minter,
     });
@@ -22,11 +22,11 @@ contract('BnbStaking.......', async ([alice, bob, admin, dev, minter]) => {
       this.wBNB.address,
       { from: minter }
     );
-    await this.rewardToken.mint(this.bnbChef.address, 100000, { from: minter });
+    await this.rewardToken.transfer(this.bnbChef.address, 100000, { from: minter });
   });
 
   it('deposit/withdraw', async () => {
-    await time.advanceBlockTo('10');
+    await time.advanceBlockTo('763');
     await this.bnbChef.deposit({ from: alice, value: 100 });
     await this.bnbChef.deposit({ from: bob, value: 200 });
     assert.equal(
@@ -82,7 +82,7 @@ contract('BnbStaking.......', async ([alice, bob, admin, dev, minter]) => {
       'caller is not the owner'
     );
     await this.bnbChef.emergencyRewardWithdraw(1000, { from: minter });
-    assert.equal((await this.rewardToken.balanceOf(minter)).toString(), '1000');
+    assert.equal((await this.rewardToken.balanceOf(minter)).toString(), '99999999999999999999901000');
   });
 
   it('setLimitAmount', async () => {

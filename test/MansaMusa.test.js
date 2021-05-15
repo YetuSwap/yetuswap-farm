@@ -6,7 +6,7 @@ const MockBEP20 = artifacts.require('libs/MockBEP20');
 
 contract('MansaMusa', ([alice, bob, carol, dev, minter]) => {
     beforeEach(async () => {
-        this.yetu = await YetubitToken.new({ from: minter });
+        this.yetu = await YetubitToken.new(minter, { from: minter });
         this.afrikan = await AfrikanBar.new(this.yetu.address, { from: minter });
         this.lp1 = await MockBEP20.new('LPToken', 'LP1', '1000000', { from: minter });
         this.lp2 = await MockBEP20.new('LPToken', 'LP2', '1000000', { from: minter });
@@ -40,8 +40,8 @@ contract('MansaMusa', ([alice, bob, carol, dev, minter]) => {
       await this.musa.add('100', this.lp3.address, true, { from: minter });
       await this.musa.add('100', this.lp3.address, true, { from: minter });
       assert.equal((await this.musa.poolLength()).toString(), "10");
-
-      await time.advanceBlockTo('170');
+     
+      await time.advanceBlockTo('921');
       await this.lp1.approve(this.musa.address, '1000', { from: alice });
       assert.equal((await this.yetu.balanceOf(alice)).toString(), '0');
       await this.musa.deposit(1, '20', { from: alice });
@@ -107,7 +107,7 @@ contract('MansaMusa', ([alice, bob, carol, dev, minter]) => {
     });
 
 
-    it('updaate multiplier', async () => {
+    it('update multiplier', async () => {
       await this.musa.add('1000', this.lp1.address, true, { from: minter });
       await this.musa.add('1000', this.lp2.address, true, { from: minter });
       await this.musa.add('1000', this.lp3.address, true, { from: minter });
@@ -134,7 +134,7 @@ contract('MansaMusa', ([alice, bob, carol, dev, minter]) => {
       assert.equal((await this.yetu.balanceOf(alice)).toString(), '700');
       assert.equal((await this.yetu.balanceOf(bob)).toString(), '150');
 
-      await time.advanceBlockTo('265');
+      await time.advanceBlockTo('1016');
 
       await this.musa.enterStaking('0', { from: alice });
       await this.musa.enterStaking('0', { from: bob });
