@@ -13,3 +13,42 @@ https://yetuswap.finance. Feel free to read the code. More details coming soon.
 - (Uni|Yetu)swapV2Pair init code hash - `0x630de1cb6e451aba82b8f7f0decfc41e16cf45fcf3518f11e4960918f1673d21`
 - MultiCall - 0xE1dDc30f691CA671518090931e3bFC1184BFa4Aa
 
+## TEST Results
+
+```
+Contract: AfrikanBar
+    ✓ mint (45ms)
+    ✓ burn (1663ms)
+    ✓ safeYetuTransfer (83ms)
+
+  Contract: BnbStaking.......
+    ✓ deposit/withdraw (405ms)
+    ✓ should block man who in blanklist (126ms)
+    ✓ emergencyWithdraw (77ms)
+    ✓ emergencyRewardWithdraw (48ms)
+    ✓ setLimitAmount
+
+  Contract: MansaMusa
+    ✓ real case (264ms)
+    ✓ setReceiver (211ms)
+    ✓ emergencyWithdraw
+    ✓ update admin (90ms)
+
+  Contract: MansaMusa
+    ✓ real case (891ms)
+    ✓ deposit/withdraw (535ms)
+    ✓ staking/unstaking (384ms)
+    ✓ update multiplier (990ms)
+    ✓ should allow dev and only dev to update dev (85ms)
+
+  Contract: Timelock
+    ✓ should not allow non-owner to do operation (96ms)
+    ✓ should do the timelock thing (77ms)
+    ✓ should also work with MansaMusa (317ms)
+
+  Contract: YetubitToken
+    ✓ mint to new owner
+
+
+  21 passing (10s)
+```
