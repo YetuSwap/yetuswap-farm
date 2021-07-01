@@ -27,6 +27,7 @@ contract LotteryRewardPool is Ownable {
     event StartFarming(address indexed user, uint256 indexed pid);
     event Harvest(address indexed user, uint256 indexed pid);
     event EmergencyWithdraw(address indexed user, uint256 amount);
+    event SetReceiver(address indexed invoker, address _receiver);
 
     modifier onlyAdmin() {
         require(msg.sender == adminAddress, "admin: wut?");
@@ -48,6 +49,7 @@ contract LotteryRewardPool is Ownable {
 
     function setReceiver(address _receiver) external onlyAdmin {
         receiver = _receiver;
+        emit SetReceiver(msg.sender, _receiver);
     }
 
     function  pendingReward(uint256 _pid) external view returns (uint256) {

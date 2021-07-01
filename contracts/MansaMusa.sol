@@ -97,8 +97,6 @@ library SafeBEP20 {
 
 import "./AfrikanBar.sol";
 
-// import "@nomiclabs/buidler/console.sol";
-
 interface IMigrator {
     // Perform LP token migration from legacy YetuSwap(old) to YetuSwap(new).
     // Take the current LP token address and return the new LP token address.
@@ -169,10 +167,20 @@ contract MansaMusa is Ownable {
     uint256 public totalAllocPoint = 0;
     // The block number when YETU mining starts.
     uint256 public startBlock;
+    // Public mapping to store if lp tokens has been included
+    mapping(IBEP20 => bool) public farmRegistry;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
+    event SetDev(address indexed invoker, address indexed _devaddr);
+    event SetMigrator(address indexed _migrator);
+    event UpdateMultiplier(uint256 indexed multiplierNumber);
+
+    modifier validatePoolByPid(uint256 _pid) {
+        require (_pid < poolInfo.length , "Pool does not exist") ;
+        _;
+    }
 
     constructor(
         YetubitToken _yetu,
@@ -201,6 +209,7 @@ contract MansaMusa is Ownable {
 
     function updateMultiplier(uint256 multiplierNumber) public onlyOwner {
         BONUS_MULTIPLIER = multiplierNumber;
+        emit UpdateMultiplier(multiplierNumber);
     }
 
     function poolLength() external view returns (uint256) {
@@ -210,6 +219,7 @@ contract MansaMusa is Ownable {
     // Add a new lp to the pool. Can only be called by the owner.
     // XXX DO NOT add the same LP token more than once. Rewards will be messed up if you do.
     function add(uint256 _allocPoint, IBEP20 _lpToken, bool _withUpdate) public onlyOwner {
+        require(farmRegistry[_lpToken] == false, "Farm already added");
         if (_withUpdate) {
             massUpdatePools();
         }
@@ -222,10 +232,11 @@ contract MansaMusa is Ownable {
             accYetuPerShare: 0
         }));
         updateStakingPool();
+        farmRegistry[_lpToken] = true;
     }
 
     // Update the given pool's YETU allocation point. Can only be called by the owner.
-    function set(uint256 _pid, uint256 _allocPoint, bool _withUpdate) public onlyOwner {
+    function set(uint256 _pid, uint256 _allocPoint, bool _withUpdate) public onlyOwner validatePoolByPid(_pid) {
         if (_withUpdate) {
             massUpdatePools();
         }
@@ -252,11 +263,13 @@ contract MansaMusa is Ownable {
 
     // Set the migrator contract. Can only be called by the owner.
     function setMigrator(IMigrator _migrator) public onlyOwner {
+        require(address(_migrator) != address(0), "Avoid Zero Address");
         migrator = _migrator;
+        emit SetMigrator(address(_migrator));
     }
 
     // Migrate lp token to another lp contract. Can be called by anyone. We trust that migrator contract is good.
-    function migrate(uint256 _pid) public {
+    function migrate(uint256 _pid) public validatePoolByPid(_pid) {
         require(address(migrator) != address(0), "migrate: no migrator");
         PoolInfo storage pool = poolInfo[_pid];
         IBEP20 lpToken = pool.lpToken;
@@ -273,7 +286,7 @@ contract MansaMusa is Ownable {
     }
 
     // View function to see pending YETUs on frontend.
-    function pendingYetu(uint256 _pid, address _user) external view returns (uint256) {
+    function pendingYetu(uint256 _pid, address _user) external  validatePoolByPid(_pid) view returns (uint256) {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
         uint256 accYetuPerShare = pool.accYetuPerShare;
@@ -296,7 +309,7 @@ contract MansaMusa is Ownable {
 
 
     // Update reward variables of the given pool to be up-to-date.
-    function updatePool(uint256 _pid) public {
+    function updatePool(uint256 _pid) public  validatePoolByPid(_pid) {
         PoolInfo storage pool = poolInfo[_pid];
         if (block.number <= pool.lastRewardBlock) {
             return;
@@ -316,7 +329,7 @@ contract MansaMusa is Ownable {
     }
 
     // Deposit LP tokens to MansaMusa for YETU allocation.
-    function deposit(uint256 _pid, uint256 _amount) public {
+    function deposit(uint256 _pid, uint256 _amount) public  validatePoolByPid(_pid) {
 
         require (_pid != 0, 'deposit YETU by staking');
 
@@ -338,7 +351,7 @@ contract MansaMusa is Ownable {
     }
 
     // Withdraw LP tokens from MansaMusa.
-    function withdraw(uint256 _pid, uint256 _amount) public {
+    function withdraw(uint256 _pid, uint256 _amount) public  validatePoolByPid(_pid) {
 
         require (_pid != 0, 'withdraw YETU by unstaking');
         PoolInfo storage pool = poolInfo[_pid];
@@ -400,13 +413,14 @@ contract MansaMusa is Ownable {
     }
 
     // Withdraw without caring about rewards. EMERGENCY ONLY.
-    function emergencyWithdraw(uint256 _pid) public {
+    function emergencyWithdraw(uint256 _pid) public validatePoolByPid(_pid) {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
-        pool.lpToken.safeTransfer(address(msg.sender), user.amount);
-        emit EmergencyWithdraw(msg.sender, _pid, user.amount);
+        uint256 amount = user.amount;
         user.amount = 0;
         user.rewardDebt = 0;
+        pool.lpToken.safeTransfer(address(msg.sender), amount);
+        emit EmergencyWithdraw(msg.sender, _pid, amount);
     }
 
     // Safe yetu transfer function, just in case if rounding error causes pool to not have enough YETUs.
@@ -416,7 +430,9 @@ contract MansaMusa is Ownable {
 
     // Update dev address by the previous dev.
     function dev(address _devaddr) public {
+        require(address(_devaddr) != address(0), "Avoid Zero Address");
         require(msg.sender == devaddr, "dev: wut?");
         devaddr = _devaddr;
+        emit SetDev(msg.sender, _devaddr);
     }
 }

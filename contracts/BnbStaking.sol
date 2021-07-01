@@ -62,6 +62,10 @@ contract BnbStaking is Ownable {
     event Deposit(address indexed user, uint256 amount);
     event Withdraw(address indexed user, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 amount);
+    event SetAdmin(address indexed invoker, address indexed _adminAddress);
+    event SetBlackList(address indexed invoker, address indexed _blacklistAddress);
+    event RemoveBlackList(address indexed invoker, address indexed _blacklistAddress);
+    event SetLimitAmount(address indexed invoker, uint256 indexed amount);
 
     constructor(
         IBEP20 _lp,
@@ -103,19 +107,23 @@ contract BnbStaking is Ownable {
     // Update admin address by the previous dev.
     function setAdmin(address _adminAddress) public onlyOwner {
         adminAddress = _adminAddress;
+        emit SetAdmin(msg.sender, _adminAddress);
     }
 
     function setBlackList(address _blacklistAddress) public onlyAdmin {
         userInfo[_blacklistAddress].inBlackList = true;
+        emit SetBlackList(msg.sender, _blacklistAddress);
     }
 
     function removeBlackList(address _blacklistAddress) public onlyAdmin {
         userInfo[_blacklistAddress].inBlackList = false;
+        emit RemoveBlackList(msg.sender, _blacklistAddress);
     }
 
     // Set the limit amount. Can only be called by the owner.
     function setLimitAmount(uint256 _amount) public onlyOwner {
         limitAmount = _amount;
+        emit SetLimitAmount(msg.sender, _amount);
     }
 
     // Return reward multiplier over the given _from to _to block.
