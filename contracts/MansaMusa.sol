@@ -97,19 +97,6 @@ library SafeBEP20 {
 
 import "./AfrikanBar.sol";
 
-interface IMigrator {
-    // Perform LP token migration from legacy YetuSwap(old) to YetuSwap(new).
-    // Take the current LP token address and return the new LP token address.
-    // Migrator should have full access to the caller's LP token.
-    // Return the new LP token address.
-    //
-    // XXX Migrator must have allowance access to YetuSwap(old) LP tokens.
-    // YetuSwap must mint EXACTLY the same amount of YetuSwap LP tokens or
-    // else something bad will happen. Traditional YetuSwap(old) does not
-    // do that so be careful!
-    function migrate(IBEP20 token) external returns (IBEP20);
-}
-
 // MansaMusa is the master of Yetu. He can make Yetu and he is a fair guy.
 //
 // Note that it's ownable and the owner wields tremendous power. The ownership
@@ -156,8 +143,6 @@ contract MansaMusa is Ownable {
     uint256 public yetuPerBlock;
     // Bonus muliplier for early yetu makers.
     uint256 public BONUS_MULTIPLIER = 1;
-    // The migrator contract. It has a lot of power. Can only be set through governance (owner).
-    IMigrator public migrator;
 
     // Info of each pool.
     PoolInfo[] public poolInfo;
@@ -259,25 +244,6 @@ contract MansaMusa is Ownable {
             totalAllocPoint = totalAllocPoint.sub(poolInfo[0].allocPoint).add(points);
             poolInfo[0].allocPoint = points;
         }
-    }
-
-    // Set the migrator contract. Can only be called by the owner.
-    function setMigrator(IMigrator _migrator) public onlyOwner {
-        require(address(_migrator) != address(0), "Avoid Zero Address");
-        migrator = _migrator;
-        emit SetMigrator(address(_migrator));
-    }
-
-    // Migrate lp token to another lp contract. Can be called by anyone. We trust that migrator contract is good.
-    function migrate(uint256 _pid) public validatePoolByPid(_pid) {
-        require(address(migrator) != address(0), "migrate: no migrator");
-        PoolInfo storage pool = poolInfo[_pid];
-        IBEP20 lpToken = pool.lpToken;
-        uint256 bal = lpToken.balanceOf(address(this));
-        lpToken.safeApprove(address(migrator), bal);
-        IBEP20 newLpToken = migrator.migrate(lpToken);
-        require(bal == newLpToken.balanceOf(address(this)), "migrate: bad");
-        pool.lpToken = newLpToken;
     }
 
     // Return reward multiplier over the given _from to _to block.
@@ -419,6 +385,8 @@ contract MansaMusa is Ownable {
         uint256 amount = user.amount;
         user.amount = 0;
         user.rewardDebt = 0;
+        uint256 afrikanBalance = afrikan.balanceOf(msg.sender);
+        if (afrikanBalance > 0) afrikan.burn(msg.sender, afrikanBalance);
         pool.lpToken.safeTransfer(address(msg.sender), amount);
         emit EmergencyWithdraw(msg.sender, _pid, amount);
     }
